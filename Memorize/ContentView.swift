@@ -14,65 +14,91 @@ struct ContentView: View {
 //        Text("again")
 //    }
     
-    let emojis: Array<String> = ["👻", "🎃", "🕷️", "😈", "💀", "🕸️", "🧙🏻‍♀️", "🙀", "👹", "😱", "☠️", "🍭"]
-    @State var cardCount: Int = 4
+    let halloween: Array<String> = ["👻", "🎃", "🕷️", "😈", "💀", "🕸️", "🧙🏻‍♀️", "🙀", "👹", "😱", "☠️", "🍭"]
+    let cats: Array<String> = ["🐱", "🐈", "🐈‍⬛", "😹", "😻", "🙀", "😿", "😽", "😸", "😺", "😾", "😼", "🐯", "🦁"]
+    let faces: Array<String> = ["😘", "🤣", "😭", "😍", "😊", "🥰", "😁", "🙄", "🥺", "😉", "😅", "🤪", "😡", "🤗", "😜", "😬"]
+    
+    @State var currentTheme = "halloween"
+    
+    var emojis: Array<String> {
+        switch currentTheme {
+        case "halloween":
+            return halloween
+        case "cats":
+            return cats
+        default:
+            return faces
+        }
+    }
+    
+    var shuffledEmojis: Array<String> {
+        var pairs = emojis
+        pairs.append(contentsOf: emojis)
+        pairs.shuffle()
+        print(pairs)
+        return pairs
+    }
     
     var body: some View {
         
 //Same as: let emojis = ["👻", "🎃", "🕷️", "😈"]
 //Same as: let emojis: [String] = ["👻", "🎃", "🕷️", "😈"]
         VStack{
+            Text("Memorize!")
+                .font(.title)
             ScrollView{
                 cards
             }
-            Spacer()
-            cardAdjustors
+//            Spacer()
+            themeSelector
         }
-        .padding()
+        .ignoresSafeArea()
+        .padding(15)
     }
     
     var cards: some View{
-        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))]) { //implicit return, not needed
-            ForEach(0..<cardCount, id: \.self) {index in
-                CardView(content: emojis[index])
+        return LazyVGrid(columns: [GridItem(.adaptive(minimum: 75))]) { //implicit return, not needed
+            ForEach(emojis.indices, id: \.self) {index in
+                CardView(content: shuffledEmojis[index])
                     .aspectRatio(2/3, contentMode: .fit)
             }
         }
         .foregroundColor(.orange)
     }
     
-    var cardAdjustors: some View{
-        HStack {
-            cardRemover
-            Spacer()
-            cardAdder
+    var themeSelector: some View{
+        HStack(alignment: .bottom, spacing: 15){
+            themeButton(themeSelected: "halloween", Logo: Image(systemName: "moon.circle.fill"))
+            themeButton(themeSelected: "cats", Logo: Image(systemName: "cat.fill"))
+            themeButton(themeSelected: "faces", Logo: Image(systemName: "face.smiling"))
         }
-        .imageScale(.large)
-        .font(.largeTitle)
+        .frame(maxWidth: .infinity, maxHeight: 50)
     }
     
-    func cardCountAdjuster(by offset: Int, symbol: String) -> some View {
+    func setCurrentTheme(theme: String){
+        currentTheme = theme
+    }
+    
+    func themeButton(themeSelected theme: String, Logo image: Image) -> some View {
         Button(action: {
-            cardCount += offset
-                
+            setCurrentTheme(theme: theme)
         }, label: {
-            Image(systemName: symbol)
-        }) //Disable button to avoid array out of bounds
-        .disabled(cardCount + offset < 1 || cardCount + offset > emojis.count)
-    }
-    
-    var cardAdder: some View{
-        cardCountAdjuster(by: 1, symbol: "rectangle.stack.badge.plus.fill")
-    }
-
-    var cardRemover: some View{
-        cardCountAdjuster(by: -1, symbol: "rectangle.stack.badge.minus.fill")
+            VStack(spacing: 5){
+                Spacer()
+                image
+                    .font(.largeTitle)
+                Text(theme)
+                    .font(.footnote)
+            }.padding(5)
+        })
+        .frame(width: 90)
+        .font(.title)
     }
 }
 
 struct CardView: View {
     let content: String
-    @State var isFaceUp: Bool = true
+    @State var isFaceUp: Bool = false
     
     var body: some View {
         ZStack{
@@ -94,3 +120,5 @@ struct CardView: View {
 #Preview {
     ContentView()
 }
+
+
